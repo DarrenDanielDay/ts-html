@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <canvas width="400" height="300" id="cvs"></canvas>
   </div>
 </template>
 
@@ -8,7 +9,12 @@ import { Component, Vue } from "vue-property-decorator";
 @Component({
   components: {},
 })
-export default class App extends Vue {}
+export default class App extends Vue {
+  mounted() {
+    const canvas: HTMLCanvasElement = document.getElementById('cvs') as any;
+    const context: CanvasRenderingContext2D = canvas.getContext("2d") as any;
+  }
+}
 </script>
 
 <style lang="scss">
@@ -19,5 +25,8 @@ export default class App extends Vue {}
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+#cvs {
+  border: black 1px solid;
 }
 </style>
