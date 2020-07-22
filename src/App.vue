@@ -1,18 +1,31 @@
 <template>
   <div id="app">
     <canvas width="400" height="300" id="cvs"></canvas>
+    <div class="buttons">
+      <button class="clear" @click="clear">clear</button>
+      <button class="draw" @click="draw">draw</button>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 @Component({
-  components: {},
+  components: {}
 })
 export default class App extends Vue {
+  public canvas!: HTMLCanvasElement;
+  public context2d!: CanvasRenderingContext2D;
   mounted() {
-    const canvas: HTMLCanvasElement = document.getElementById('cvs') as any;
-    const context: CanvasRenderingContext2D = canvas.getContext("2d") as any;
+    this.canvas = document.getElementById("cvs") as any;
+    this.context2d = this.canvas.getContext("2d") as any;
+  }
+  clear() {
+    console.log("clear!");
+    this.context2d.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+  draw() {
+    console.log("draw!");
   }
 }
 </script>
@@ -28,5 +41,15 @@ export default class App extends Vue {
 }
 #cvs {
   border: black 1px solid;
+}
+.buttons {
+  display: flex;
+  justify-content: space-around;
+}
+.clear {
+  background: #cc4444;
+}
+.draw {
+  background: #44cc44;
 }
 </style>
