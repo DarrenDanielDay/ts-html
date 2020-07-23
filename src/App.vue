@@ -19,6 +19,7 @@ export default class App extends Vue {
   mounted() {
     this.canvas = document.getElementById("cvs") as any;
     this.context2d = this.canvas.getContext("2d") as any;
+    this.draw();
   }
   clear() {
     console.log("clear!");
@@ -26,6 +27,7 @@ export default class App extends Vue {
   }
   draw() {
     console.log("draw!");
+    // TODO
   }
 }
 </script>
