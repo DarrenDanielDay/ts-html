@@ -94,25 +94,53 @@ export interface ProjectionPlane {
   yBasis: Vector3D;
 }
 
+/**
+ * 可绘制对象
+ */
 export interface Drawable {
   draw(context: CanvasRenderingContext2D): void;
 }
 
+/**
+ * 线段
+ */
 export interface Line<TVector extends Vector> {
   start: TVector;
   end: TVector;
+  style?: string;
 }
 
+/**
+ * 2/3维向量
+ */
 type Vector = Vector2D | Vector3D;
 
+/**
+ * 2元组
+ */
 type Tuple2 = [number, number];
 
+/**
+ * 3元组
+ */
 type Tuple3 = [number, number, number];
 
+/**
+ * 3阶矩阵
+ */
 type Matrix3 = [Tuple3, Tuple3, Tuple3];
 
+/**
+ * 零向量
+ */
 export const ZERO: Readonly<Vector3D> = { x: 0, y: 0, z: 0 };
 
+/**
+ * 构造一个点，根据参数个数（2/3）决定维度
+ * @param x x坐标
+ * @param y y坐标
+ * @param z z坐标
+ */
 export function Point<TZ extends undefined | number>(
   x: number,
   y: number,
@@ -125,10 +153,18 @@ export function Point<TZ extends undefined | number>(
   return result;
 }
 
+/**
+ * 判断是否为3维向量
+ * @param vector 向量
+ */
 export function is3D(vector: Vector): vector is Vector3D {
   return !!vector && typeof (vector as any).z !== "undefined";
 }
 
+/**
+ * 判断是否为0向量
+ * @param vector 向量
+ */
 export function isZero(vector: Vector): boolean {
   return (
     vector === ZERO ||
@@ -136,10 +172,18 @@ export function isZero(vector: Vector): boolean {
   );
 }
 
+/**
+ * 复制一个向量
+ * @param vector 向量
+ */
 export function cloneOf<TVector extends Vector>(vector: TVector): TVector {
   return Object.assign({}, vector);
 }
 
+/**
+ * 转换成数组
+ * @param vector 向量
+ */
 export function toArray<TVector extends Vector>(
   vector: TVector
 ): TVector extends Vector3D ? Tuple3 : Tuple2 {
@@ -150,6 +194,22 @@ export function toArray<TVector extends Vector>(
   return result as any;
 }
 
+/**
+ * 字符串显示
+ * @param vector 向量
+ */
+export function toString(vector: Vector): string {
+  let s = `x: ${vector.x.toFixed(8)} y: ${vector.y.toFixed(8)}`;
+  if (is3D(vector)) {
+    s += ` z: ${vector.z.toFixed(8)}`
+  }
+  return s;
+}
+
+/**
+ * 3阶矩阵转换成一组空间基
+ * @param matrix 矩阵
+ */
 export function basis3DFromMatrix(matrix: Matrix3): Basis3D {
   return {
     xBasis: Point(...matrix[0]),
@@ -158,10 +218,19 @@ export function basis3DFromMatrix(matrix: Matrix3): Basis3D {
   };
 }
 
+/**
+ * 空间基转换成3阶矩阵
+ * @param basis 基
+ */
 export function matrixOfBasis3D(basis: Basis3D): Matrix3 {
   return [toArray(basis.xBasis), toArray(basis.yBasis), toArray(basis.zBasis)];
 }
 
+/**
+ * 数量积
+ * @param a 向量a
+ * @param b 向量b
+ */
 export function dotOf<TVector extends Vector>(a: TVector, b: TVector): number {
   if (is3D(a) && is3D(b)) {
     return a.x * b.x + a.y * b.y + a.z * b.z;
@@ -169,10 +238,19 @@ export function dotOf<TVector extends Vector>(a: TVector, b: TVector): number {
   return a.x * b.x + a.y * b.y;
 }
 
+/**
+ * 模长
+ * @param vector 向量
+ */
 export function radiusOf(vector: Vector): number {
   return Math.sqrt(dotOf(vector, vector));
 }
 
+/**
+ * 向量数乘，自乘
+ * @param vector 向量
+ * @param coefficient 系数
+ */
 export function multiplyOn<TVector extends Vector>(
   vector: TVector,
   coefficient: number
@@ -185,6 +263,11 @@ export function multiplyOn<TVector extends Vector>(
   return vector;
 }
 
+/**
+ * 向量加法，自加
+ * @param vector 原向量
+ * @param append 增量
+ */
 export function addOn<TVector extends Vector>(
   vector: TVector,
   append: Partial<TVector>
@@ -197,6 +280,11 @@ export function addOn<TVector extends Vector>(
   return vector;
 }
 
+/**
+ * 向量减法，自减
+ * @param vector 向量
+ * @param append 减量
+ */
 export function substractOn<TVector extends Vector>(
   vector: TVector,
   append: TVector
@@ -209,6 +297,10 @@ export function substractOn<TVector extends Vector>(
   return vector;
 }
 
+/**
+ * 单位化
+ * @param vector 向量
+ */
 export function unitization<TVector extends Vector>(vector: TVector): TVector {
   const radius = radiusOf(vector);
   const result: TVector = {
@@ -221,6 +313,11 @@ export function unitization<TVector extends Vector>(vector: TVector): TVector {
   return result;
 }
 
+/**
+ * 正交分解到指定轴上，返回系数
+ * @param vector 向量
+ * @param axis 轴向量
+ */
 export function decomposeOnAxis<TVector extends Vector>(
   vector: TVector,
   axis: TVector
@@ -228,6 +325,11 @@ export function decomposeOnAxis<TVector extends Vector>(
   return dotOf(vector, axis) / dotOf(axis, axis);
 }
 
+/**
+ * 向量分解，返回分解坐标
+ * @param vector 向量
+ * @param basis 轴向量
+ */
 export function decomposition<TVector extends Vector>(
   vector: TVector,
   basis: BasisOf<TVector>
@@ -243,6 +345,11 @@ export function decomposition<TVector extends Vector>(
   return result;
 }
 
+/**
+ * 向量在轴上的投影（带符号）
+ * @param vector 向量
+ * @param axis 轴向量
+ */
 export function projection<TVector extends Vector>(
   vector: TVector,
   axis: TVector
@@ -250,6 +357,27 @@ export function projection<TVector extends Vector>(
   return dotOf(vector, axis) / radiusOf(axis);
 }
 
+/**
+ * 给出用基basis和系数vector线性表示的向量
+ * @param vector 向量
+ * @param basis 基
+ */
+export function representationOf<TVector extends Vector>(vector: TVector, basis: BasisOf<TVector>): TVector {
+  const x = multiplyOn(cloneOf(basis.xBasis), vector.x);
+  const y = multiplyOn(cloneOf(basis.yBasis), vector.y);
+  const result: TVector = addOn(x, y) as any;
+  if (is3D(vector)) {
+    const z = multiplyOn(cloneOf((basis as Basis3D).zBasis), vector.z);
+    addOn(x, z);
+  }
+  return result;
+}
+
+/**
+ * 矩阵乘法
+ * @param a a矩阵
+ * @param b b矩阵
+ */
 export function matrixMultiplication(a: number[][], b: number[][]): number[][] {
   const result: number[][] = [];
   const n = a.length;
@@ -266,12 +394,38 @@ export function matrixMultiplication(a: number[][], b: number[][]): number[][] {
   return result;
 }
 
-export function rotateBasis3D(basis: Basis3D, rotation: Basis3D): Basis3D {
-  return basis3DFromMatrix(
-      matrixMultiplication(
-      matrixOfBasis3D(basis), matrixOfBasis3D(rotation)) as any);
+/**
+ * 向量外积（叉积）
+ * @param a 3维向量a
+ * @param b 3维向量b
+ */
+export function crossProductOf(a: Vector3D, b: Vector3D): Vector3D {
+  return {
+    x: a.y * b.z - b.y * a.z,
+    y: a.z * b.x - a.x * b.z,
+    z: a.x * b.y - a.y * b.x,
+  }
 }
 
+/**
+ * 向量旋转
+ * @param basis 基
+ * @param rotation 旋转向量
+ */
+export function rotateBasis3D(basis: Basis3D, rotation: Basis3D): Basis3D {
+  return basis3DFromMatrix(
+    matrixMultiplication(
+      matrixOfBasis3D(basis),
+      matrixOfBasis3D(rotation)
+    ) as any
+  );
+}
+
+/**
+ * 将点投影到投影平面后，点在平面内的坐标
+ * @param point 点
+ * @param plane 投影平面
+ */
 export function planeProjection(
   point: Vector3D,
   plane: ProjectionPlane
@@ -282,14 +436,40 @@ export function planeProjection(
   };
 }
 
+/**
+ * 计算屏幕（视觉平面）在参考坐标系中对应的投影平面
+ * @param c 参考坐标系
+ */
 export function visualPlaneOf(c: CoordinateSystem): ProjectionPlane {
   return {
-    origin: decomposition(multiplyOn(cloneOf(c.origin), -1), c.basis),
+    origin: decomposition(substractOn(cloneOf(ZERO), c.origin), c.basis),
     xBasis: decomposition({ x: 1, y: 0, z: 0 }, c.basis),
     yBasis: decomposition({ x: 0, y: 1, z: 0 }, c.basis),
   };
 }
 
+/**
+ * 计算屏幕上的位置在参考坐标系中的坐标（屏幕所处平面以visualPlane计算）
+ * @param c 参考坐标系
+ * @param position 屏幕上相对原点的位置
+ */
+export function screenPositionOf(c: CoordinateSystem, position: Vector2D) {
+  const plane = visualPlaneOf(c);
+  const { x, y } = position;
+  return addOn(
+    addOn(
+      multiplyOn(unitization(plane.xBasis), x),
+      multiplyOn(unitization(plane.yBasis), y)
+    ),
+    plane.origin
+  );
+}
+
+/**
+ * 将3维线段投影到投影平面，得到二维线段
+ * @param line 线段
+ * @param plane 平面
+ */
 export function projectLine(
   line: Line<Vector3D>,
   plane: ProjectionPlane
@@ -302,13 +482,19 @@ export function projectLine(
 
 export function drawLine(
   line: Line<Vector2D>,
-  context: CanvasRenderingContext2D
+  context: CanvasRenderingContext2D,
+  style?: string
 ) {
+  context.save();
+  if (style !== undefined) {
+    context.strokeStyle = style;
+  }
   context.beginPath();
-  context.moveTo(line.start.x, line.start.y);
-  context.lineTo(line.end.x, line.end.y);
+  context.moveTo(Math.round(line.start.x), Math.round(line.start.y));
+  context.lineTo(Math.round(line.end.x), Math.round(line.end.y));
   context.closePath();
   context.stroke();
+  context.restore();
 }
 
 export class TestCuboid implements Drawable {
@@ -324,12 +510,16 @@ export class TestCuboid implements Drawable {
   }
   draw(context: CanvasRenderingContext2D): void {
     const plane = visualPlaneOf(this.coor);
-    for (const line of this.lines) {
-      drawLine(projectLine(line, plane), context);
+    for (const line of this.lines()) {
+      drawLine(projectLine(line, plane), context, line.style);
     }
+    context.beginPath();
+    const origin = planeProjection(ZERO, plane)
+    context.arc(origin.x, origin.y, 1, 0, 2 * Math.PI);
+    context.stroke();
   }
 
-  get lines(): Array<Line<Vector3D>> {
+  lines(): Array<Line<Vector3D>> {
     const { a, b, c } = this;
     const p0 = Point(-a, -b, -c);
     const p1 = Point(a, -b, -c);
@@ -343,50 +533,66 @@ export class TestCuboid implements Drawable {
       {
         start: p0,
         end: p1,
+        style: 'red',
       },
       {
         start: p1,
         end: p2,
+        style: 'green',
       },
       {
         start: p2,
         end: p3,
+        style: 'red',
       },
       {
         start: p3,
         end: p0,
+        style: 'blue',
       },
       {
         start: p0,
         end: p4,
+        style: 'blue',
       },
       {
         start: p1,
         end: p5,
+        style: 'green',
       },
       {
         start: p2,
         end: p6,
+        style: 'green',
       },
       {
         start: p3,
         end: p7,
+        style: 'blue',
       },
       {
         start: p4,
         end: p5,
+        style: 'red',
       },
       {
         start: p5,
         end: p6,
+        style: 'green',
       },
       {
         start: p6,
         end: p7,
+        style: 'red',
       },
       {
         start: p7,
         end: p4,
+        style: 'blue',
+      },
+      {
+        start: ZERO,
+        end: Point(a, 0, 0),
       },
     ];
   }

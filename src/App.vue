@@ -1,46 +1,68 @@
 <template>
   <div id="app">
+    <div>将鼠标移到框内查看3D立方体</div>
     <canvas width="400" height="300" id="cvs"></canvas>
-    <div class="buttons">
-      <button class="clear" @click="clear">clear</button>
-      <button class="draw" @click="draw">draw</button>
-    </div>
+    <div>屏幕所在平面方程：x + y + z = 100√3</div>
+    <div>当前鼠标三维坐标</div>
+    <div id="message"></div>
+    <div>当前鼠标二维坐标</div>
+    <div id="position"></div>
+    <div id="plane"></div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { CoordinateSystem, visualPlaneOf, TestCuboid, rotateBasis3D, Point, unitization } from "./utils/matrix3d";
+import {
+  CoordinateSystem,
+  visualPlaneOf,
+  TestCuboid,
+  rotateBasis3D,
+  Point,
+  unitization,
+  dotOf,
+  Basis3D,
+  substractOn,
+  cloneOf,
+  addOn,
+  multiplyOn,
+  toString,
+  crossProductOf,
+  decomposition,
+  representationOf,
+  screenPositionOf
+} from "./utils/matrix3d";
 // const cvs = document.getElementById("cvs") as HTMLCanvasElement;
 const r2 = Math.sqrt(2);
 const r3 = Math.sqrt(3);
 const r6 = Math.sqrt(6);
+const stdBasis = {
+  xBasis: {
+    x: 1 / r2,
+    y: 1 / r6,
+    z: 1 / r3
+  },
+  yBasis: {
+    x: -1 / r2,
+    y: 1 / r6,
+    z: 1 / r3
+  },
+  zBasis: {
+    x: 0,
+    y: -r2 / r3,
+    z: 1 / r3
+  }
+};
 const coordinateSystem: CoordinateSystem = {
   origin: {
     x: 200,
     y: 150,
-    z: 0,
+    z: -100
   },
-  basis: {
-    xBasis: {
-      x: 1 / r2,
-      y: -1 / r6,
-      z: -1 / r3,
-    },
-    yBasis: {
-      x: -1 / r2,
-      y: -1 / r6,
-      z: -1 / r3,
-    },
-    zBasis: {
-      x: 0,
-      y: r2 / r3,
-      z: -1 / r3,
-    },
-  },
+  basis: stdBasis
 };
 @Component({
-  components: {},
+  components: {}
 })
 export default class App extends Vue {
   public canvas!: HTMLCanvasElement;
@@ -49,14 +71,25 @@ export default class App extends Vue {
     this.canvas = document.getElementById("cvs") as any;
     this.context2d = this.canvas.getContext("2d") as any;
     this.draw();
-    this.canvas.addEventListener("mousemove", (e) => {
+    this.canvas.addEventListener("mousemove", e => {
       console.log("mousemove", e.offsetX, e.offsetY);
       this.clear();
-      coordinateSystem.basis = rotateBasis3D(coordinateSystem.basis, {
-        xBasis: unitization(Point(e.offsetX * 0.01, 1, 0)),
-        yBasis: unitization(Point(0, -e.offsetX * 0.01, 1)),
-        zBasis: unitization(Point(100 / e.offsetX, -1, -e.offsetX * 0.01)),
-      });
+      const x = e.offsetX;
+      const y = e.offsetY;
+      const ray = screenPositionOf({
+        origin: coordinateSystem.origin,
+        basis: stdBasis,
+      }, {x, y})
+      document.getElementById("message")!.innerText = toString(ray);
+      document.getElementById("position")!.innerText = toString({ x, y });
+      const xRay = representationOf(unitization(ray), stdBasis);
+      const yRay = unitization(crossProductOf(stdBasis.xBasis, xRay))
+      const zRay = unitization(crossProductOf(yRay, xRay));
+      coordinateSystem.basis = {
+        xBasis: xRay,
+        yBasis: yRay,
+        zBasis: zRay,
+      }
       this.draw();
     });
   }
@@ -69,7 +102,7 @@ export default class App extends Vue {
     console.log("draw!");
     // TODO
     const plane = visualPlaneOf(coordinateSystem);
-    new TestCuboid(50, 100, 100, coordinateSystem).draw(this.context2d);
+    new TestCuboid(50, 50, 50, coordinateSystem).draw(this.context2d);
   }
 }
 </script>
