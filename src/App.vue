@@ -26,11 +26,11 @@ import {
   cloneOf,
   addOn,
   multiplyOn,
-  toString,
   crossProductOf,
   decomposition,
   representationOf,
-  screenPositionOf
+  screenPositionOf,
+  toPrettyString
 } from "./utils/matrix3d";
 // const cvs = document.getElementById("cvs") as HTMLCanvasElement;
 const r2 = Math.sqrt(2);
@@ -80,8 +80,8 @@ export default class App extends Vue {
         origin: coordinateSystem.origin,
         basis: stdBasis,
       }, {x, y})
-      document.getElementById("message")!.innerText = toString(ray);
-      document.getElementById("position")!.innerText = toString({ x, y });
+      document.getElementById("message")!.innerText = toPrettyString(ray);
+      document.getElementById("position")!.innerText = toPrettyString({ x, y });
       const xRay = representationOf(unitization(ray), stdBasis);
       const yRay = unitization(crossProductOf(stdBasis.xBasis, xRay))
       const zRay = unitization(crossProductOf(yRay, xRay));

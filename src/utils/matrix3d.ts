@@ -198,7 +198,7 @@ export function toArray<TVector extends Vector>(
  * 字符串显示
  * @param vector 向量
  */
-export function toString(vector: Vector): string {
+export function toPrettyString(vector: Vector): string {
   let s = `x: ${vector.x.toFixed(8)} y: ${vector.y.toFixed(8)}`;
   if (is3D(vector)) {
     s += ` z: ${vector.z.toFixed(8)}`
